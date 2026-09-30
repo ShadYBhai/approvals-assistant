@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import { approvalsRouter } from './routes/approvals';
 
 
 export interface LlmJsonRequest {
@@ -45,6 +46,8 @@ export function createApp({ llm: _llm, timeoutMs: _timeoutMs = 8000 }: AppOption
   app.get('/health', (_req, res) => {
     res.json({ ok: true });
   });
+
+  app.use('/api/approvals', approvalsRouter);
 
 
   return app;

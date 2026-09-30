@@ -7,6 +7,7 @@
     "rootDir": "src",
     "noUnusedLocals": false,
     "noUnusedParameters": false,
+    "resolveJsonModule": true,
     "types": ["jest", "node"]
   },
   "include": ["src"],
