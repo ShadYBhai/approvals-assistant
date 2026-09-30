@@ -57,48 +57,63 @@ export function SummaryCard() {
 
   if (status === 'idle' || (status !== 'loading' && status !== 'streaming' && !summaryData && !errorMessage)) {
     return (
-      <button
-        onClick={handleClick}
-        className="summary-card-btn"
-        aria-label="Present me Summary"
-      >
-        🗒️ Present me Summary
-      </button>
+      <div className="feature-view">
+        <h2>Present me Summary</h2>
+        <button className="action-btn" onClick={handleClick} aria-label="Present me Summary">
+          Generate summary →
+        </button>
+      </div>
     );
   }
 
   if (status === 'loading') {
-    return <div className="summary-card-loading">Loading…</div>;
+    return (
+      <div className="feature-view">
+        <h2>Present me Summary</h2>
+        <span className="loading-text">Loading…</span>
+      </div>
+    );
   }
 
   if (errorMessage) {
     return (
-      <div role="alert" className="summary-card-error">
-        <p>{errorMessage}</p>
-        <button onClick={handleClick}>Try again</button>
+      <div className="feature-view">
+        <h2>Present me Summary</h2>
+        <div role="alert" className="error-banner">
+          <p>{errorMessage}</p>
+        </div>
+        <button className="action-btn" onClick={handleClick}>Try again</button>
       </div>
     );
   }
 
   return (
-    <div className="summary-card-result">
-      {summaryData && (
-        <h3>{summaryData.headline}</h3>
-      )}
+    <div className="feature-view">
+      <h2>Present me Summary</h2>
+
+      {summaryData && <p style={{ fontSize: '0.9rem', fontWeight: 600 }}>{summaryData.headline}</p>}
 
       {(status === 'fallback' || summaryData?.source === 'fallback') && (
-        <p className="fallback-indicator" aria-live="polite">
+        <div className="fallback-banner" aria-live="polite">
           AI unavailable — showing standard guidance
-        </p>
+        </div>
       )}
 
-      <div aria-live="polite" className="narrative">
-        {streamingText}
-      </div>
+      {summaryData && summaryData.priorities.length > 0 && (
+        <div className="summary-priorities">
+          <p className="ai-label">AI-assessed priority</p>
+          {summaryData.priorities.map((p) => (
+            <div key={p.itemId} className="priority-row">
+              <span className={`urgency-${p.urgency}`}>{p.urgency.toUpperCase()}</span>
+              <span style={{ flex: 1 }}>[{p.itemId}] {p.reason}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
-      <button onClick={handleClick} style={{ marginTop: '1rem' }}>
-        Refresh
-      </button>
+      <div aria-live="polite" className="streaming-text">{streamingText}</div>
+
+      <button className="action-btn" onClick={handleClick}>Refresh</button>
     </div>
   );
 }

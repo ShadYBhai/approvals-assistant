@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { PriorityItem } from '@approvals/contracts';
 
 export type View = 'home' | 'summary' | 'talk' | 'help' | 'teach';
+export type GreetingStatus = 'idle' | 'loading' | 'ready' | 'fallback';
 export type Status = 'idle' | 'loading' | 'streaming' | 'error' | 'fallback';
 
 export interface Message {
@@ -25,6 +26,9 @@ interface StoreState {
   summaryData: SummaryData | null;
   streamingText: string;
   errorMessage: string | null;
+  helpSources: string[];
+  greetingText: string;
+  greetingStatus: GreetingStatus;
 
   setView: (view: View) => void;
   setStatus: (status: Status) => void;
@@ -33,6 +37,8 @@ interface StoreState {
   resetStreaming: () => void;
   addMessage: (msg: Message) => void;
   setError: (msg: string | null) => void;
+  setHelpSources: (sources: string[]) => void;
+  setGreeting: (text: string, status: GreetingStatus) => void;
 }
 
 function generateSessionId() {
@@ -54,6 +60,9 @@ export const useStore = create<StoreState>((set) => ({
   summaryData: null,
   streamingText: '',
   errorMessage: null,
+  helpSources: [],
+  greetingText: '',
+  greetingStatus: 'idle',
 
   setView: (view) => set({ view }),
   setStatus: (status) => set({ status }),
@@ -62,4 +71,6 @@ export const useStore = create<StoreState>((set) => ({
   resetStreaming: () => set({ streamingText: '', errorMessage: null }),
   addMessage: (msg) => set((s) => ({ messages: [...s.messages, msg] })),
   setError: (msg) => set({ errorMessage: msg, status: 'error' }),
+  setHelpSources: (sources) => set({ helpSources: sources }),
+  setGreeting: (text, status) => set({ greetingText: text, greetingStatus: status }),
 }));
