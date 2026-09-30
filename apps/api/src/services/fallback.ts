@@ -16,6 +16,30 @@ const sortedQueue = [...fixture].sort((a, b) => {
   return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
 });
 
+export function greetingFallback(): { text: string; source: 'fallback'; promptVersion: string } {
+  return {
+    text: `You have ${fixture.length} approvals waiting for review.`,
+    source: 'fallback',
+    promptVersion: 'fallback-v1',
+  };
+}
+
+export function teachFallback(): { text: string; source: 'fallback'; promptVersion: string } {
+  const steps = [
+    '1. Open the item and confirm the title and type match the actual content.',
+    '2. Identify the content type (Folder, Video, PDF, Image) and apply the right review rules.',
+    '3. Review the content carefully against the checklist for that type.',
+    '4. Check the item against the approval policy — safety items take priority.',
+    '5. Make a decision: approve, return for changes, or reject.',
+    '6. Record a written reason for your decision so the audit trail is complete.',
+  ].join('\n');
+  return {
+    text: `Here is the standard 6-step review workflow:\n\n${steps}`,
+    source: 'fallback',
+    promptVersion: 'fallback-v1',
+  };
+}
+
 export function chatFallback(): { text: string; source: 'fallback'; promptVersion: string } {
   const list = fixture.map((i) => `• ${i.name} (${i.type})`).join('\n');
   return {

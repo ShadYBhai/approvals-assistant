@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import { SummaryRequestSchema, HelpRequestSchema, ChatRequestSchema } from '@approvals/contracts';
+import { SummaryRequestSchema, HelpRequestSchema, ChatRequestSchema, TeachRequestSchema, GreetingRequestSchema } from '@approvals/contracts';
 import type { LlmClient } from '../app';
 import { buildSummaryData } from '../services/summary';
 import { summaryFallback } from '../services/fallback';
 import { streamHelp } from '../services/help';
 import { streamChat } from '../services/chat';
+import { streamTeach } from '../services/teach';
+import { streamGreeting } from '../services/greeting';
 import { setSseHeaders, writeSseToken, writeSseDone, writeSseFallback } from '../services/sse';
 
 export function createAssistantRouter(opts: { llm: LlmClient; timeoutMs: number }) {
@@ -111,6 +113,70 @@ export function createAssistantRouter(opts: { llm: LlmClient; timeoutMs: number 
       }
     } catch (_err) {
       writeSseFallback(res, { reason: 'unexpected', text: 'Chat unavailable — please try again.' });
+    } finally {
+      clearTimeout(timer);
+      res.end();
+    }
+  });
+
+  router.post('/teach', async (req, res) => {
+    const parsed = TeachRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid request body', details: parsed.error.issues });
+      return;
+    }
+
+    setSseHeaders(res);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    req.on('close', () => { clearTimeout(timer); controller.abort(); });
+
+    try {
+      for await (const event of streamTeach(
+        llm,
+        parsed.data.message,
+        parsed.data.history,
+        parsed.data.language,
+        controller.signal,
+      )) {
+        if (event.type === 'token') {
+          writeSseToken(res, event.text);
+        } else {
+          writeSseDone(res, { source: event.source, promptVersion: event.promptVersion });
+        }
+      }
+    } catch (_err) {
+      writeSseFallback(res, { reason: 'unexpected', text: 'Teach unavailable — please try again.' });
+    } finally {
+      clearTimeout(timer);
+      res.end();
+    }
+  });
+
+  router.post('/greeting', async (req, res) => {
+    const parsed = GreetingRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'Invalid request body', details: parsed.error.issues });
+      return;
+    }
+
+    setSseHeaders(res);
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    req.on('close', () => { clearTimeout(timer); controller.abort(); });
+
+    try {
+      for await (const event of streamGreeting(llm, parsed.data.language, controller.signal)) {
+        if (event.type === 'token') {
+          writeSseToken(res, event.text);
+        } else {
+          writeSseDone(res, { source: event.source, promptVersion: event.promptVersion });
+        }
+      }
+    } catch (_err) {
+      writeSseFallback(res, { reason: 'unexpected', text: 'Greeting unavailable.' });
     } finally {
       clearTimeout(timer);
       res.end();
