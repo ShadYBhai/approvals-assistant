@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { approvalsRouter } from './routes/approvals';
+import { createAssistantRouter } from './routes/assistant';
 
 
 export interface LlmJsonRequest {
@@ -32,7 +33,7 @@ export interface AppOptions {
   timeoutMs?: number;
 }
 
-export function createApp({ llm: _llm, timeoutMs: _timeoutMs = 8000 }: AppOptions) {
+export function createApp({ llm, timeoutMs = 8000 }: AppOptions) {
   const app = express();
 
   app.use(express.json());
@@ -42,13 +43,12 @@ export function createApp({ llm: _llm, timeoutMs: _timeoutMs = 8000 }: AppOption
     }),
   );
 
-
   app.get('/health', (_req, res) => {
     res.json({ ok: true });
   });
 
   app.use('/api/approvals', approvalsRouter);
-
+  app.use('/api/assistant', createAssistantRouter({ llm, timeoutMs }));
 
   return app;
 }
