@@ -1,5 +1,6 @@
 import type { SummaryResponse } from '@approvals/contracts';
 import fixture from '../data/approvals.fixture.json';
+import type { PolicyChunk } from './retrieval'; // type-only import — value never used at runtime
 
 // Deterministic sort: safety-related first, then PDF, Folder, Video, Image
 const TYPE_ORDER: Record<string, number> = { PDF: 0, Folder: 1, Video: 2, Image: 3 };
@@ -14,6 +15,22 @@ const sortedQueue = [...fixture].sort((a, b) => {
   if (aSafety !== bSafety) return aSafety - bSafety;
   return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
 });
+
+export function helpFallback(chunks: PolicyChunk[]): { text: string; source: 'fallback'; promptVersion: string } {
+  if (chunks.length === 0) {
+    return {
+      text: 'The policy does not specify this.',
+      source: 'fallback',
+      promptVersion: 'fallback-v1',
+    };
+  }
+  const body = chunks.map((c) => `**${c.heading}**\n${c.body}`).join('\n\n');
+  return {
+    text: `AI unavailable — showing policy guidance directly:\n\n${body}`,
+    source: 'fallback',
+    promptVersion: 'fallback-v1',
+  };
+}
 
 export function summaryFallback(): SummaryResponse {
   return {
