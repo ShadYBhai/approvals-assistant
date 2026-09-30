@@ -16,6 +16,15 @@ const sortedQueue = [...fixture].sort((a, b) => {
   return (TYPE_ORDER[a.type] ?? 9) - (TYPE_ORDER[b.type] ?? 9);
 });
 
+export function chatFallback(): { text: string; source: 'fallback'; promptVersion: string } {
+  const list = fixture.map((i) => `• ${i.name} (${i.type})`).join('\n');
+  return {
+    text: `Chat is temporarily unavailable. Here are your pending approvals:\n\n${list}`,
+    source: 'fallback',
+    promptVersion: 'fallback-v1',
+  };
+}
+
 export function helpFallback(chunks: PolicyChunk[]): { text: string; source: 'fallback'; promptVersion: string } {
   if (chunks.length === 0) {
     return {
