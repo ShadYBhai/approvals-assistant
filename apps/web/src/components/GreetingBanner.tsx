@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useStore } from '../store';
-import { streamPost } from '../lib/sse-client';
+import { streamPost, RateLimitError } from '../lib/sse-client';
 
 export function GreetingBanner() {
   const { sessionId, greetingText, greetingStatus, setGreeting } = useStore();
@@ -24,8 +24,11 @@ export function GreetingBanner() {
           setGreeting(text, d.source === 'fallback' ? 'fallback' : 'ready');
         }
       }
-    } catch {
-      setGreeting(`You have approvals waiting for review.`, 'fallback');
+    } catch (err) {
+      const msg = err instanceof RateLimitError
+        ? `Too many requests — please wait ${err.retryAfterSec}s.`
+        : 'You have approvals waiting for review.';
+      setGreeting(msg, 'fallback');
     }
   }
 

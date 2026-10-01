@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store';
-import { streamPost } from '../lib/sse-client';
+import { streamPost, RateLimitError } from '../lib/sse-client';
 import type { Message } from '../store';
 
 export function TeachCard() {
@@ -50,7 +50,11 @@ export function TeachCard() {
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       setStreaming('');
     } catch (err) {
-      setError((err as Error).message ?? 'Something went wrong');
+      if (err instanceof RateLimitError) {
+        setError(`Too many requests — please wait ${err.retryAfterSec}s and try again.`);
+      } else {
+        setError((err as Error).message ?? 'Something went wrong');
+      }
     } finally {
       setIsStreaming(false);
     }

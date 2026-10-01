@@ -1,7 +1,7 @@
 'use client';
 
 import { useStore, type SummaryData } from '../store';
-import { streamPost } from '../lib/sse-client';
+import { streamPost, RateLimitError } from '../lib/sse-client';
 import type { PriorityItem } from '@approvals/contracts';
 
 export function SummaryCard() {
@@ -51,7 +51,11 @@ export function SummaryCard() {
       });
       setStatus(source === 'fallback' ? 'fallback' : 'idle');
     } catch (err) {
-      setError((err as Error).message ?? 'Something went wrong');
+      if (err instanceof RateLimitError) {
+        setError(`Too many requests — please wait ${err.retryAfterSec}s and try again.`);
+      } else {
+        setError((err as Error).message ?? 'Something went wrong');
+      }
     }
   }
 

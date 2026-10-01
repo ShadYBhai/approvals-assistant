@@ -5,6 +5,13 @@ export interface SseEvent {
   data: unknown;
 }
 
+export class RateLimitError extends Error {
+  constructor(public readonly retryAfterSec: number) {
+    super(`Too many requests. Please wait ${retryAfterSec} seconds.`);
+    this.name = 'RateLimitError';
+  }
+}
+
 export async function* streamPost(
   path: string,
   body: object,
@@ -18,6 +25,11 @@ export async function* streamPost(
     },
     body: JSON.stringify(body),
   });
+
+  if (res.status === 429) {
+    const err = await res.json().catch(() => ({ retryAfterSec: 60 }));
+    throw new RateLimitError((err as { retryAfterSec?: number }).retryAfterSec ?? 60);
+  }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: 'Request failed' }));
