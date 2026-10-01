@@ -131,7 +131,16 @@ Every AI failure (timeout, 4xx/5xx, network error, malformed output, Zod validat
 
 ## Personal reflection
 
-*(150–250 words — write this yourself as required by the assignment)*
+AI-necessary vs AI-unnecessary
+
+Summary and Teach me genuinely need the LLM — urgency prioritisation requires reasoning over item titles and policy context that no deterministic rule captures reliably, and Teach me needs to adapt its explanation based on follow-up questions. Talk to me benefits from AI for natural conversation but could answer simple questions ("which items are pending?") without it. Help me is interesting — the retrieval is entirely deterministic keyword matching, and if no chunks are found the LLM is never called at all; the AI only adds value when relevant policy exists. Replay Greeting is the weakest case for AI — a template covers 90% of the value, but the LLM adds a personal, context-aware tone.
+
+
+Every LLM call has an 8-second AbortController timeout. Timeouts are never retried (retrying doubles the wait with low success probability). Transient errors (429/5xx) get one retry. Every failure class maps to a deterministic fallback — the UI always responds, never freezes.
+
+One thing I'd do differently
+
+I'd add real semantic chunking with embeddings for the Help me RAG instead of keyword overlap — the current retrieval misses paraphrased questions. With more time I'd also add a proper conversation memory summary so long Talk to me sessions don't bloat the context window.
 
 ---
 
