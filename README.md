@@ -1,4 +1,4 @@
-# Approvals AI Assistant — Crystal Ball Wave 2
+# Approvals AI Assistant
 
 OomniEye "Approvals" panel rebuilt as a working web app. Five AI-backed entry points, deterministic fallbacks, TDD commit history.
 
