@@ -1,6 +1,6 @@
 # Approvals AI Assistant
 
-OomniEye "Approvals" panel rebuilt as a working web app. Five AI-backed entry points, deterministic fallbacks, TDD commit history.
+"Approvals" panel rebuilt as a working web app. Five AI-backed entry points, deterministic fallbacks, TDD commit history.
 
 ---
 
